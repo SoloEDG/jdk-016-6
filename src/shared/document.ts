@@ -1,4 +1,4 @@
-import type { Document, Paper, Step } from "./types";
+import type { ArtworkState, Document, Paper, Step } from "./types";
 export function createDocument(paper: Paper, steps: Step[]): Document {
   return {
     paper,
@@ -12,7 +12,26 @@ export function createDocument(paper: Paper, steps: Step[]): Document {
     step: 1,
     playing: false,
     speed: 1,
-    view: { yaw: -35, pitch: 50, zoom: 1, grid: true, wire: true },
+    view: {
+      yaw: -35,
+      pitch: 50,
+      zoom: 1,
+      grid: true,
+      wire: true,
+      mode: "fold",
+      preset: "iso",
+    },
+    artworks: createArtworkState(),
+  };
+}
+export function createArtworkState(): ArtworkState {
+  return {
+    front: null,
+    back: null,
+    side: "front",
+    loading: null,
+    token: 0,
+    history: [],
   };
 }
 export const clamp = (n: number, min: number, max: number) =>

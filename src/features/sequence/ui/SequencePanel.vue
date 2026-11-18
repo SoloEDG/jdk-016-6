@@ -50,7 +50,8 @@ defineEmits<{ seek: [n: number]; play: []; capture: [] }>();
               : i === doc.steps.length - 1
                 ? "FINISH"
                 : "FOLD " + String(i).padStart(2, "0")
-          }}</small></span
+          }}</small
+          ><small v-if="s.saved" class="saved-tag">已存折法</small></span
         ><i v-if="i < doc.steps.length - 1"></i>
       </button>
     </div>

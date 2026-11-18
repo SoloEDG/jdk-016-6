@@ -30,11 +30,25 @@ import {
   captureStep,
   usePlayer,
 } from "../features/sequence";
-import { Viewport, ObservePanel, setView } from "../features/observe";
+import {
+  Viewport,
+  ObservePanel,
+  setView,
+  leaveFlat,
+} from "../features/observe";
+import { ArtworkPanel } from "../features/artwork";
 const doc = reactive(createDocument(papers[0]!, makeSteps(papers[0]!)));
 const pose = computed(() => solvePose(doc.paper, doc.angles)),
   hinges = computed(() => hingePositions(doc.paper, pose.value));
-const { toggle } = usePlayer(doc);
+const { toggle: playToggle } = usePlayer(doc);
+function toggle() {
+  // Playback is a 3D teaching sequence; step out of the flat editor first.
+  leaveFlat(doc);
+  playToggle();
+}
+// Dev-only handle so automated checks can drive the same document state.
+if (import.meta.env.DEV)
+  (window as unknown as { __ori: unknown }).__ori = doc;
 const help = ref(false),
   toast = ref("");
 function notify(s: string) {
@@ -44,9 +58,11 @@ function notify(s: string) {
 function choosePaper(id: string) {
   const p = papers.find((p) => p.id === id);
   if (p) {
+    const wasLoading = Boolean(doc.artworks.loading);
     replacePaper(doc, p);
     doc.steps = makeSteps(p);
     setView(doc, "iso");
+    if (wasLoading) notify("已换纸，正在载入的图片已作废");
   }
 }
 function reset() {
@@ -57,7 +73,7 @@ function reset() {
 }
 function capture() {
   captureStep(doc);
-  notify("当前形态已保存到步骤 " + (doc.step + 1));
+  notify("折法已保存到步骤 " + (doc.step + 1) + "，图案仍跟随最新贴图");
 }
 </script>
 <template>
@@ -97,7 +113,7 @@ function capture() {
           <PaperPanel :doc="doc" @paper="choosePaper" /><CreasePanel
             :doc="doc"
             @select="selectCrease(doc, $event)"
-          />
+          /><ArtworkPanel :doc="doc" @notify="notify" />
           <div class="sidebar-footer">
             <Layers :size="13" /> 单张纸 ·
             {{ doc.paper.faces.length }} 个关联纸面
@@ -173,6 +189,9 @@ function capture() {
         </p>
         <p>
           下方步骤可还原对应形态，也可保存当前角度后播放。拖动画面旋转视角，滚轮缩放，下载按钮可保存当前观察图。
+        </p>
+        <p>
+          在「03 / 贴图」中分别给正反两面上传图案：展开图里可拖动、旋转、缩放，折起后图案会连续跨过折痕。步骤只保存折法，换图后仍一致显示当前图案。
         </p>
         <p>作品保留在本次会话中，刷新会重新开始。</p>
         <button class="primary" @click="help = false">开始探索 ↗</button>

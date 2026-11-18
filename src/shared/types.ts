@@ -27,6 +27,44 @@ export interface Step {
   note: string;
   angles: Record<string, number>;
   duration: number;
+  /** True once the user saved this step; saved steps never snapshot artwork. */
+  saved?: boolean;
+}
+export type PaperSide = "front" | "back";
+export interface ArtworkTransform {
+  x: number;
+  z: number;
+  scale: number;
+  rotation: number;
+}
+export interface Artwork {
+  id: string;
+  name: string;
+  src: string;
+  width: number;
+  height: number;
+  bytes: number;
+  original: { width: number; height: number; bytes: number };
+  transform: ArtworkTransform;
+  createdAt: number;
+}
+export interface ArtworkLoading {
+  token: number;
+  side: PaperSide;
+  name: string;
+  paperId: string;
+}
+export interface ArtworkSnapshot {
+  front: Artwork | null;
+  back: Artwork | null;
+}
+export interface ArtworkState {
+  front: Artwork | null;
+  back: Artwork | null;
+  side: PaperSide;
+  loading: ArtworkLoading | null;
+  token: number;
+  history: ArtworkSnapshot[];
 }
 export interface View {
   yaw: number;
@@ -34,6 +72,8 @@ export interface View {
   zoom: number;
   grid: boolean;
   wire: boolean;
+  mode: "fold" | "flat";
+  preset: "iso" | "top" | "front" | "flat";
 }
 export interface Document {
   paper: Paper;
@@ -48,6 +88,7 @@ export interface Document {
   playing: boolean;
   speed: number;
   view: View;
+  artworks: ArtworkState;
 }
 export interface PoseFace {
   id: string;
